@@ -33,8 +33,21 @@ The challenges assume three files (replace 00 with the day of the challenge).
 - `Sources/Day00.swift`: the code to solve the challenge
 - `Tests/Day00.swift`: any unit tests that you want to include
 
-To start a new day's challenge, make a copy of these files, updating 00 to the 
-day number.
+### Quick Start: Interactive Scaffold Script
+
+Use the automated scaffold script that guides you through setup:
+
+```shell
+./Scripts/scaffold-day.swift <day>
+```
+
+The script will:
+1. Ask if you want to add puzzle input now (paste and press Ctrl+D)
+2. Ask if you want to add test data now (paste and press Ctrl+D)
+3. Ask for expected Part 1 and Part 2 answers
+4. Create all three files with your data
+5. Register the day in `AdventOfCode.swift`
+
 
 ```diff
 // Add each new day implementation to this array:
