@@ -1,23 +1,64 @@
-import Algorithms
-
 struct Day01: AdventDay {
-  // Save your data in a corresponding text file in the `Data` directory.
   var data: String
 
-  // Splits input data into its component parts and convert from string.
-  var entities: [String] {
-    data.split(separator: "\n").map(String.init)
+  enum Direction {
+    case left
+    case right
   }
 
-  // Replace this with your solution for the first part of the day's challenge.
+  struct Rotation {
+    let direction: Direction
+    let distance: Int
+  }
+
+  var rotations: [Rotation] {
+    data.split(separator: "\n").compactMap { line in
+      let trimmed = line.trimmingCharacters(in: .whitespaces)
+      guard !trimmed.isEmpty else { return nil }
+      let direction: Direction = trimmed.first == "L" ? .left : .right
+      guard let distance = Int(trimmed.dropFirst()) else { return nil }
+      return Rotation(direction: direction, distance: distance)
+    }
+  }
+
   func part1() async throws -> Any {
-    // TODO: Implement part 1
-    return 0
+    rotations
+      .reduce((position: 50, count: 0)) { state, rotation in
+        let offset = rotation.direction == .left ? -rotation.distance : rotation.distance
+        let newPosition = (state.position + offset).wrappedToDialRange()
+        return (newPosition, state.count + (newPosition == 0 ? 1 : 0))
+      }
+      .count
   }
 
-  // Replace this with your solution for the second part of the day's challenge.
   func part2() async throws -> Any {
-    // TODO: Implement part 2
-    return 0
+    rotations
+      .reduce((position: 50, count: 0)) { state, rotation in
+        let offset = rotation.direction == .left ? -rotation.distance : rotation.distance
+        let newPosition = (state.position + offset).wrappedToDialRange()
+
+        let crossings: Int
+        switch rotation.direction {
+        case .left:
+          if state.position == 0 {
+            crossings = rotation.distance / 100
+          } else if rotation.distance >= state.position {
+            crossings = (rotation.distance - state.position) / 100 + 1
+          } else {
+            crossings = 0
+          }
+        case .right:
+          crossings = (state.position + rotation.distance) / 100 - state.position / 100
+        }
+
+        return (newPosition, state.count + crossings)
+      }
+      .count
+  }
+}
+
+extension Int {
+  fileprivate func wrappedToDialRange() -> Int {
+    (self % 100 + 100) % 100
   }
 }
