@@ -81,21 +81,68 @@ struct Day\(dayString)Tests {
 
 print("📝 Setting up Day \(day)...\n")
 
-// Ask for puzzle input
-print("📥 Do you want to add your puzzle input now? (y/n)")
-let addInput = readLine()?.lowercased() == "y"
+// Automatically fetch puzzle input using elf
+print("📥 Fetching puzzle input from Advent of Code...")
 
 var puzzleInput = ""
-if addInput {
-    print("\n📋 Paste your puzzle input (press Ctrl+D when done):")
-    print("---")
-    var lines: [String] = []
-    while let line = readLine() {
-        lines.append(line)
+var addInput = false
+
+// Get current year
+let currentYear = Calendar.current.component(.year, from: Date())
+
+// Try to fetch input using elf
+let process = Process()
+process.executableURL = URL(fileURLWithPath: "/bin/bash")
+process.arguments = ["-c", "source .env 2>/dev/null && elf input \(currentYear) \(day)"]
+
+let pipe = Pipe()
+let errorPipe = Pipe()
+process.standardOutput = pipe
+process.standardError = errorPipe
+
+do {
+    try process.run()
+    process.waitUntilExit()
+
+    if process.terminationStatus == 0 {
+        let data = pipe.fileHandleForReading.readDataToEndOfFile()
+        if let output = String(data: data, encoding: .utf8), !output.isEmpty {
+            puzzleInput = output.trimmingCharacters(in: .newlines)
+            let lineCount = puzzleInput.components(separatedBy: .newlines).count
+            print("✅ Fetched puzzle input (\(lineCount) lines)\n")
+            addInput = true
+        } else {
+            print("⚠️  elf returned empty output")
+        }
+    } else {
+        let errorData = errorPipe.fileHandleForReading.readDataToEndOfFile()
+        if let errorOutput = String(data: errorData, encoding: .utf8), !errorOutput.isEmpty {
+            print("⚠️  elf failed: \(errorOutput)")
+        } else {
+            print("⚠️  elf failed (exit code: \(process.terminationStatus))")
+        }
     }
-    puzzleInput = lines.joined(separator: "\n")
-    print("---")
-    print("✅ Captured \(lines.count) lines of input\n")
+} catch {
+    print("⚠️  Could not run elf: \(error)")
+}
+
+// Fall back to manual input if elf failed
+if !addInput {
+    print("\n📥 Do you want to add puzzle input manually? (y/n)")
+    let manualInput = readLine()?.lowercased() == "y"
+
+    if manualInput {
+        print("\n📋 Paste your puzzle input (press Ctrl+D when done):")
+        print("---")
+        var lines: [String] = []
+        while let line = readLine() {
+            lines.append(line)
+        }
+        puzzleInput = lines.joined(separator: "\n")
+        print("---")
+        print("✅ Captured \(lines.count) lines of input\n")
+        addInput = true
+    }
 }
 
 // Ask for test data
