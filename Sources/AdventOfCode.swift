@@ -5,7 +5,8 @@ let allChallenges: [any AdventDay] = [
   Day00(),
   Day01(),
 
-  Day02(),]
+  Day02(),
+  Day03(),]
 
 @main
 struct AdventOfCode: AsyncParsableCommand {
